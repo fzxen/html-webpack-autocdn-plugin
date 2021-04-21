@@ -1,0 +1,1 @@
+# html-webpack-autocdn-plugin
