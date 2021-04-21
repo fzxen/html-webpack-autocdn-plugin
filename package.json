@@ -1,0 +1,31 @@
+{
+  "name": "html-webpack-autocdn-plugin",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "node ./test/build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zxffan/html-webpack-autocdn-plugin.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zxffan/html-webpack-autocdn-plugin/issues"
+  },
+  "homepage": "https://github.com/zxffan/html-webpack-autocdn-plugin#readme",
+  "devDependencies": {
+    "html-webpack-plugin": "^5.3.1",
+    "typescript": "^4.2.4",
+    "webpack": "^5.35.0"
+  }
+}
