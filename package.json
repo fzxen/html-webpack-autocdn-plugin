@@ -16,9 +16,9 @@
     "type": "git",
     "url": "git+https://github.com/zxffan/html-webpack-autocdn-plugin.git"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": ["webpack", "plugin"],
+  "author": "ZXFAN",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/zxffan/html-webpack-autocdn-plugin/issues"
   },
