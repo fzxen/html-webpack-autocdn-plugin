@@ -14,16 +14,16 @@ interface CdnAssetsObject {
 }
 
 interface CdnAssetsFn {
-  (version: string, mode: EnvMode): string;
+  (name: string, version: string, mode: EnvMode): {
+    js?: string;
+    css?: string;
+  };
 }
 
 interface Options {
   dependencies?: {
-    [props: string]: {
-      external: string;
-      js?: CdnAssetsObject | CdnAssetsFn | string;
-      css?: CdnAssetsObject | CdnAssetsFn | string;
-    };
+    externals: PlainObj;
+    transform: CdnAssetsFn;
   };
   js?: Array<CdnAssetsObject | string>;
   css?: Array<CdnAssetsObject | string>;
@@ -33,7 +33,6 @@ class HtmlWebpackAutoCdnPlugin {
   private options: Options;
   private dependencies: PlainObj<string> =
     require(path.resolve(process.cwd(), "package.json"))?.dependencies ?? {};
-  private externals: PlainObj<any> = {};
 
   private jsAssets: string[] = [];
   private cssAssets: string[] = [];
@@ -43,34 +42,35 @@ class HtmlWebpackAutoCdnPlugin {
 
   constructor(options: Options) {
     this.options = options;
-
-    const dependencies = options.dependencies ?? {};
-    for (const name of Object.keys(dependencies)) {
-      const dependency = dependencies[name];
-      Object.assign(this.externals, { [name]: dependency.external });
-    }
   }
 
   apply(compiler: Compiler) {
-    // mode
+    // * mode
     this.mode = compiler.options.mode ?? this.mode;
     this.isDev = this.mode === "development";
 
-    // assets
-    const { dependencies = {}, js = [], css = [] } = this.options;
-    for (const name of Object.keys(dependencies)) {
-      const { js, css } = dependencies[name];
-      js && this.handleAssets(js, this.jsAssets, name);
-      css && this.handleAssets(css, this.cssAssets, name);
+    // * assets
+    const { dependencies, js = [], css = [] } = this.options;
+    // assets - dependencies
+    if (dependencies !== undefined) {
+      const { transform, externals } = dependencies;
+      for (const name of Object.keys(externals)) {
+        this.handleAssets(this.jsAssets, transform, name);
+      }
     }
-    for (const asset of js) this.handleAssets(asset, this.jsAssets);
-    for (const asset of css) this.handleAssets(asset, this.cssAssets);
+    // assets - other
+    for (const asset of js) this.handleAssets(this.jsAssets, asset);
+    for (const asset of css) this.handleAssets(this.cssAssets, asset);
 
-    // external
-    const oldExternals = compiler.options.externals;
-    if (Array.isArray(oldExternals)) oldExternals.push(this.externals);
-    else compiler.options.externals = [oldExternals, this.externals];
+    // * external
+    const external = this.options.dependencies?.externals;
+    if (external) {
+      const oldExternals = compiler.options.externals;
+      if (Array.isArray(oldExternals)) oldExternals.push(external);
+      else compiler.options.externals = [oldExternals, external];
+    }
 
+    // * hook
     compiler.hooks.compilation.tap(
       "HtmlWebpackAutoCdnPlugin",
       (compilation) => {
@@ -89,10 +89,11 @@ class HtmlWebpackAutoCdnPlugin {
   }
 
   handleAssets(
-    asset: CdnAssetsObject | CdnAssetsFn | string,
     arr: string[],
+    asset?: CdnAssetsObject | CdnAssetsFn | string,
     name?: string
   ) {
+    if (asset === undefined) return;
     // str
     if (typeof asset === "string") arr.push(asset);
     // obj
@@ -107,8 +108,12 @@ class HtmlWebpackAutoCdnPlugin {
         const sign = version.slice(0, 1);
         if (sign === "^" || sign === "~") version = version.slice(1);
       }
-      const url = asset(version, this.mode);
-      url && arr.push(url);
+      const { js, css } = asset(name, version, this.mode) ?? {};
+      if (typeof js === "function") return;
+      this.handleAssets(this.jsAssets, js, name);
+
+      if (typeof css === "function") return;
+      this.handleAssets(this.cssAssets, css, name);
     }
   }
 }

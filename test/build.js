@@ -17,15 +17,20 @@ const compiler = webpack({
   plugins: [
     new HtmlWebpackPlugin({
       template: ab("./index.html"),
+      inject: "body",
     }),
     new HtmlWebpackAutoCdnPlugin({
       dependencies: {
-        vue: {
-          external: "vue",
-          js: (version, mode) => {
-            console.log("vue", version, mode);
-            return "https://unpkg.com/vue@next";
-          },
+        externals: {
+          vue: "vue",
+        },
+        transform(name, version, mode) {
+          const isDev = mode === "development";
+          const dependency = `${name}@${version}${isDev ? "" : ".min"}.js`;
+          return {
+            js: `https://unpkg.com/${dependency}.js`,
+            css: `https://unpkg.com/${dependency}.css`,
+          };
         },
       },
       js: ["https://unpkg.com/vue-router@4"],

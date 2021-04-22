@@ -1,6 +1,6 @@
 {
   "name": "html-webpack-autocdn-plugin",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,7 +16,11 @@
     "type": "git",
     "url": "git+https://github.com/zxffan/html-webpack-autocdn-plugin.git"
   },
-  "keywords": ["webpack", "plugin"],
+  "keywords": [
+    "webpack",
+    "plugin",
+    "html-webpack-autocdn-plugin"
+  ],
   "author": "ZXFAN",
   "license": "MIT",
   "bugs": {
